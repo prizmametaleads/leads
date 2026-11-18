@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Leads Brisas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="apple-touch-icon" sizes="512x512" href="../icono_ML.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../icono_ML.png">
+  <meta name="apple-mobile-web-app-title" content="Leads Brisas">
+  <style>
+    body{font-family:sans-serif;text-align:center;padding:60px 20px;color:#001489}
+    img{width:96px;height:96px;border-radius:20px}
+  </style>
+  <script>
+    // App Meta Leads servida desde GitHub (sin el cartel de Apps Script).
+    // Apps Script solo entrega la pantalla y los datos.
+    var APP = 'https://script.google.com/macros/s/AKfycbyN4nJ7EbctKO8SAMTew0MkD3PDh9PG8NNhDhtGXdPAuPSJRmRbH3XZc5pe5SVSoUVY/exec';
+    var ICONOS = '<link rel="apple-touch-icon" sizes="512x512" href="../icono_ML.png">' +
+      '<link rel="icon" type="image/png" sizes="512x512" href="../icono_ML.png">' +
+      '<meta name="apple-mobile-web-app-title" content="Leads Brisas">';
+
+    function llamar(fn, args) {
+      return fetch(APP, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ fn: fn, args: args || [] })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        if (!d.ok) throw new Error(d.e);
+        return d.r;
+      });
+    }
+
+    // Reemplazo de google.script.run para que la app funcione fuera de Apps Script
+    function runner(ok, err) {
+      return new Proxy({}, {
+        get: function (_, fn) {
+          if (fn === 'withSuccessHandler') return function (h) { return runner(h, err); };
+          if (fn === 'withFailureHandler') return function (h) { return runner(ok, h); };
+          if (fn === 'withUserObject') return function () { return runner(ok, err); };
+          return function () {
+            llamar(fn, Array.prototype.slice.call(arguments))
+              .then(function (r) { if (ok) ok(r); })
+              .catch(function (e) { if (err) err(e); });
+          };
+        }
+      });
+    }
+    window.google = { script: { run: runner(null, null) } };
+
+    function cargar() {
+      llamar('getUI').then(function (html) {
+        html = html.replace('<base target="_top">', '').replace('<head>', '<head>' + ICONOS);
+        document.open(); document.write(html); document.close();
+      }).catch(function () {
+        document.getElementById('msg').innerHTML = 'No se pudo cargar. <a href="#" onclick="location.reload()">Reintentar</a>';
+      });
+    }
+  </script>
+</head>
+<body onload="cargar()">
+  <img src="../icono_ML.png" alt="Meta Leads">
+  <p id="msg">Cargando Meta Leads · Brisas de Adrogué…</p>
+</body>
+</html>
